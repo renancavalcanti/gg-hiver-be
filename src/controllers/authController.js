@@ -66,47 +66,56 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const {email, password} = req.body;
+    try{
+        const {email, password} = req.body;
 
-    if(!email || !password){
-        return res.status(400).json({
-            message: "Email and Password are required!"
+        if(!email || !password){
+            return res.status(400).json({
+                message: "Email and Password are required!"
+            });
+        }
+
+        const user = await User.findOne({
+            email: String(email).toLowerCase()
+        });
+
+        if(!user){
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, user.password);
+
+        if(!isValidPassword){
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+        
+        const token = generateToken(String(user._id), email);
+
+        return res.json({
+            message: "Login successful",
+            data:{
+                token,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt
+                }
+            }
         });
     }
-
-    const user = await User.findOne({
-        email: String(email).toLowerCase()
-    });
-
-    if(!user){
-        return res.status(401).json({
-            message: "Invalid email or password"
-        });
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if(!isValidPassword){
-        return res.status(401).json({
-            message: "Invalid email or password"
+    catch(error){
+        console.log(error);
+        return res.status(500).json({
+            message: "Error while registering user."
         });
     }
     
-    const token = generateToken(String(user._id), email);
-
-    return res.json({
-        message: "Login successful",
-        data:{
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt
-            }
-        }
-    });
 }
 
 module.exports = { register, login };
