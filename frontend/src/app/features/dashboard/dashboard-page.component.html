@@ -1,0 +1,121 @@
+<section class="dashboard-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Integrated dashboard</p>
+      <h1>Hello, {{ currentUser()?.name }}</h1>
+      <p class="subtitle">
+        Authentication and tasks integrated directly with the API.
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <button type="button" class="ghost" (click)="logout()">Sign out</button>
+    </div>
+  </header>
+
+  @if (pageError()) {
+    <p class="feedback error">{{ pageError() }}</p>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-card">Loading application data...</div>
+  } @else {
+    <div class="dashboard-grid">
+      <article class="panel form-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">{{ isEditing ? 'Edit task' : 'New task' }}</p>
+            <h2>{{ isEditing ? 'Update task details' : 'Create a new task' }}</h2>
+          </div>
+          @if (isEditing) {
+            <button type="button" class="ghost" (click)="resetForm()">Cancel</button>
+          }
+        </div>
+
+        <form [formGroup]="taskForm" (ngSubmit)="submitTask()" class="task-form">
+          <label>
+            <span>Title</span>
+            <input type="text" formControlName="title" placeholder="Example: Validate sprint delivery" />
+          </label>
+
+          <label>
+            <span>Description</span>
+            <textarea formControlName="description" rows="4" placeholder="Task details"></textarea>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              <span>Priority</span>
+              <select formControlName="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Assign to</span>
+              <select formControlName="assignedUserId">
+                <option value="">No assignee</option>
+                @for (user of users(); track user.id) {
+                  <option [value]="user.id">{{ user.name }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <label class="checkbox">
+            <input type="checkbox" formControlName="done" />
+            <span>Mark as completed</span>
+          </label>
+
+          <button type="submit" [disabled]="isSavingTask()">
+            {{ isSavingTask() ? 'Saving...' : isEditing ? 'Save changes' : 'Create task' }}
+          </button>
+        </form>
+      </article>
+
+      <article class="panel tasks-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Integrated tasks</p>
+            <h2>Items associated with your user</h2>
+          </div>
+        </div>
+
+        <div class="task-list">
+          @for (task of tasks(); track trackByTask($index, task)) {
+            <div class="task-card" [class.done]="task.done">
+              <div class="task-meta">
+                <span class="priority" [class.high]="task.priority === 'high'" [class.low]="task.priority === 'low'">
+                  {{ task.priority }}
+                </span>
+                <span>{{ task.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+
+              <h3>{{ task.title }}</h3>
+              <p>{{ task.description || 'No description.' }}</p>
+
+              <div class="task-owners">
+                <span>Owner: {{ task.userId.name }}</span>
+                <span>Assigned to: {{ task.assignedUserId?.name || 'nobody' }}</span>
+              </div>
+
+              <div class="task-actions">
+                <button type="button" class="secondary" (click)="toggleTask(task)">
+                  {{ task.done ? 'Reopen' : 'Complete' }}
+                </button>
+                <button type="button" class="ghost" (click)="editTask(task)">Edit</button>
+                @if (isOwner(task)) {
+                  <button type="button" class="danger" (click)="deleteTask(task)">Delete</button>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">No tasks found for your user.</div>
+          }
+        </div>
+      </article>
+    </div>
+  }
+</section>

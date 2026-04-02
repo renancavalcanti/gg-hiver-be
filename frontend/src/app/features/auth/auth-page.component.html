@@ -1,0 +1,60 @@
+<section class="auth-shell">
+  <div class="hero-card">
+    <p class="eyebrow">TaskFlow</p>
+    <h1>Authentication and tasks in one unified interface.</h1>
+    <p class="hero-copy">
+      The Angular application connects directly to the full login and task API without adding
+      unnecessary complexity.
+    </p>
+
+    <div class="hero-points">
+      <span>JWT integrated</span>
+      <span>Shared tasks</span>
+      <span>Unified dashboard</span>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-header">
+      <p class="eyebrow">{{ mode() === 'login' ? 'Sign in' : 'Create account' }}</p>
+      <h2>{{ mode() === 'login' ? 'Access your workspace' : 'Register a new user' }}</h2>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+      @if (mode() === 'register') {
+        <label>
+          <span>Name</span>
+          <input type="text" formControlName="name" placeholder="Jane Smith" />
+        </label>
+      }
+
+      <label>
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="jane@email.com" />
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="At least 6 characters" />
+      </label>
+
+      @if (errorMessage()) {
+        <p class="feedback error">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Processing...' : mode() === 'login' ? 'Sign in' : 'Register' }}
+      </button>
+    </form>
+
+    <p class="switch-link">
+      @if (mode() === 'login') {
+        Don&apos;t have an account?
+        <a routerLink="/register">Create one now</a>
+      } @else {
+        Already registered?
+        <a routerLink="/login">Back to sign in</a>
+      }
+    </p>
+  </div>
+</section>
